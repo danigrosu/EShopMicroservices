@@ -13,10 +13,18 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
 {
     public CreateProductCommandValidator()
     {
-        RuleFor(c => c.Name).NotEmpty().WithMessage("Name is required");
-        RuleFor(c => c.Category).NotEmpty().WithMessage("Category is required");
-        RuleFor(c => c.ImageFile).NotEmpty().WithMessage("Image is required");
-        RuleFor(c => c.Price).GreaterThan(0).WithMessage("Price must be greater than 0");
+        RuleFor(c => c.Name)
+            .NotEmpty()
+            .WithMessage("Name is required");
+        RuleFor(c => c.Category)
+            .NotEmpty()
+            .WithMessage("Category is required");
+        RuleFor(c => c.ImageFile)
+            .NotEmpty()
+            .WithMessage("Image is required");
+        RuleFor(c => c.Price)
+            .GreaterThan(0)
+            .WithMessage("Price must be greater than 0");
     }
 }
 
