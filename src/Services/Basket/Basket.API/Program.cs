@@ -31,7 +31,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(opts =>
 {
-    opts.Address = new Uri(builder.Configuration["GprcSettings:DiscountUrl"]!);
+    opts.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
 })
 .ConfigurePrimaryHttpMessageHandler(() => 
 {
