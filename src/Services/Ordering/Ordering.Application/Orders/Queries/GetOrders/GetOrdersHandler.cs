@@ -16,6 +16,7 @@ public class GetOrdersHandler(IApplicationDbContext dbContext)
             .AsNoTracking()
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
+            .OrderBy(o => o.OrderName.Value)
             .ToListAsync(cancellationToken);
 
         var paginatedResult = new PaginatedResult<OrderDto>(
