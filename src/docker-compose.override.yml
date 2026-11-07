@@ -4,8 +4,8 @@ services:
   catalogdb:
     container_name: catalogdb
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=${POSTGRES_USER:?set in .env}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set in .env}
       - POSTGRES_DB=CatalogDb
     restart: always
     ports:
@@ -16,8 +16,8 @@ services:
   basketdb:
     container_name: basketdb
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=${POSTGRES_USER:?set in .env}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set in .env}
       - POSTGRES_DB=BasketDb
     restart: always
     ports:
@@ -35,7 +35,7 @@ services:
     container_name: orderdb
     environment: 
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=SwN12345678
+      - SA_PASSWORD=${MSSQL_SA_PASSWORD:?set in .env}
     restart: always
     ports:
       - "1433:1433"
@@ -44,8 +44,8 @@ services:
     container_name: messagebroker
     hostname: ecommerce-mq
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:?set in .env}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:?set in .env}
     restart: always
     ports:
       - "5672:5672"
@@ -56,7 +56,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
-      - ConnectionStrings__Database=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - ConnectionStrings__Database=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
     depends_on:
       - catalogdb
     ports:
@@ -71,12 +71,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
-      - ConnectionStrings__Database=Server=basketdb;Port=5432;Database=BasketDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - ConnectionStrings__Database=Server=basketdb;Port=5432;Database=BasketDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
       - ConnectionStrings__Redis=distributedcache:6379
       - GrpcSettings__DiscountUrl=https://discount.grpc:8081
       - MessageBroker__Host=amqp://ecommerce-mq:5672
-      - MessageBroker__UserName=guest
-      - MessageBroker__Password=guest
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
     depends_on:
       - basketdb
       - distributedcache
@@ -107,10 +107,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
-      - ConnectionStrings__Database=Server=orderdb;Database=OrderDb;User Id=sa;Password=SwN12345678;Encrypt=False;TrustServerCertificate=True
+      - ConnectionStrings__Database=Server=orderdb;Database=OrderDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=False;TrustServerCertificate=True
       - MessageBroker__Host=amqp://ecommerce-mq:5672
-      - MessageBroker__UserName=guest
-      - MessageBroker__Password=guest
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
       - FeatureManagement__OrderFullfilment=false
     depends_on:
       - orderdb
