@@ -15,15 +15,17 @@ public class CheckoutBasketCommandValidator
 }
 
 public class CheckoutBasketCommandHandler
-    (IBasketRepository repository, IPublishEndpoint publishEndpoint)
+    (IBasketRepository repository)
     : ICommandHandler<CheckoutBasketCommand, CheckoutBasketResult>
 {
     public async Task<CheckoutBasketResult> Handle(CheckoutBasketCommand command, CancellationToken cancellationToken)
     {
-        // get existing basket with total price
-        // Set totalprice on basketcheckout event message
-        // send basket checkout event to rabbitmq using masstransit
-        // delete the basket
+        // 1. Load the basket to get its total price.
+        // 2. Build the checkout event.
+        // 3. Delete the basket and queue the event in the outbox in ONE transaction.
+        //    We don't publish to RabbitMQ here: a database and a broker can't share a
+        //    transaction, so publishing directly could leave one done and the other not.
+        //    OutboxProcessor publishes the queued event in the background.
 
         var basket = await repository.GetBasket(command.BasketCheckoutDto.UserName, cancellationToken);
         if (basket == null)
@@ -34,9 +36,7 @@ public class CheckoutBasketCommandHandler
         var eventMessage = command.BasketCheckoutDto.Adapt<BasketCheckoutEvent>();
         eventMessage.TotalPrice = basket.TotalPrice;
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
-
-        await repository.DeleteBasket(command.BasketCheckoutDto.UserName, cancellationToken);
+        await repository.CheckoutBasket(command.BasketCheckoutDto.UserName, eventMessage, cancellationToken);
 
         return new CheckoutBasketResult(true);
     }

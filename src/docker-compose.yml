@@ -1,11 +1,13 @@
 version: '3.4'
 
 services:
+  # Pinned to the major version the existing data volumes were created with.
+  # Untagged "postgres" means "latest", which jumped to 18 and can't read 16 data.
   catalogdb:
-    image: postgres
+    image: postgres:16
 
   basketdb:
-    image: postgres
+    image: postgres:16
 
   distributedcache:
     image: redis

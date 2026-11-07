@@ -5,6 +5,18 @@ public class CreateOrderHandler(IApplicationDbContext dbContext)
 {
     public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
+        // Idempotency: a caller-supplied id acts as an idempotency key. Handling the same
+        // command twice returns the existing order instead of creating a second one.
+        // The primary key is the final safety net if two duplicates race past this check.
+        if (command.Order.Id != Guid.Empty)
+        {
+            var existingId = OrderId.Of(command.Order.Id);
+            if (await dbContext.Orders.AnyAsync(o => o.Id == existingId, cancellationToken))
+            {
+                return new CreateOrderResult(existingId.Value);
+            }
+        }
+
         var order = CreateNewOrder(command.Order);
 
         dbContext.Orders.Add(order);
@@ -34,7 +46,7 @@ public class CreateOrderHandler(IApplicationDbContext dbContext)
             orderDto.BillingAddress.ZipCode);
 
         var newOrder = Order.Create(
-            id: OrderId.Of(Guid.NewGuid()),
+            id: OrderId.Of(orderDto.Id == Guid.Empty ? Guid.NewGuid() : orderDto.Id),
             customerId: CustomerId.Of(orderDto.CustomerId),
             orderName: OrderName.Of(orderDto.OrderName),
             shippingAddress: shippingAddress,

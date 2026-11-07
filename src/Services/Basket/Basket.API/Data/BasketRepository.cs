@@ -20,4 +20,14 @@ public class BasketRepository(IDocumentSession session) : IBasketRepository
         await session.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public async Task CheckoutBasket(string userName, IntegrationEvent checkoutEvent, CancellationToken cancellationToken = default)
+    {
+        // Both changes go to the same Postgres database, and Marten commits everything
+        // queued on a session in one transaction: either the basket is gone AND the event
+        // is queued, or neither happened. OutboxProcessor publishes the event afterwards.
+        session.Delete<ShoppingCart>(userName);
+        session.Store(OutboxMessage.From(checkoutEvent));
+        await session.SaveChangesAsync(cancellationToken);
+    }
 }

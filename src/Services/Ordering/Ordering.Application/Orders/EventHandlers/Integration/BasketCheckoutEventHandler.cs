@@ -20,7 +20,10 @@ public class BasketCheckoutEventHandler
         // Create full order with incoming event data
         var addressDto = new AddressDto(message.FirstName, message.LastName, message.EmailAddress, message.AddressLine, message.Country, message.State, message.ZipCode);
         var paymentDto = new PaymentDto(message.CardName, message.CardNumber, message.Expiration, message.CVV, message.PaymentMethod);
-        var orderId = Guid.NewGuid();
+        // The event id becomes the order id. RabbitMQ delivers at-least-once, so the same
+        // event can arrive twice; with a deterministic id, CreateOrderHandler recognises the
+        // second delivery as an order that already exists instead of creating a duplicate.
+        var orderId = message.Id;
 
         var orderDto = new OrderDto(
             Id: orderId,

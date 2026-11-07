@@ -43,6 +43,7 @@ builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(
 
 //Async Communication Services
 builder.Services.AddMessageBroker(builder.Configuration);
+builder.Services.AddHostedService<OutboxProcessor>();
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 

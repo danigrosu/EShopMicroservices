@@ -39,4 +39,11 @@ public class CachedBasketRepository(
 
         return true;
     }
+
+    public async Task CheckoutBasket(string userName, IntegrationEvent checkoutEvent, CancellationToken cancellationToken = default)
+    {
+        await repository.CheckoutBasket(userName, checkoutEvent, cancellationToken);
+
+        await cache.RemoveAsync(userName, cancellationToken);
+    }
 }
